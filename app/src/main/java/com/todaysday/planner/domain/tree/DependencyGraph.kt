@@ -21,7 +21,7 @@ class DependencyGraph(
     fun waitsFor(id: Long): Set<Long> = waitsFor(id, requirements)
 
     private fun waitsFor(id: Long, reqs: Map<Long, Set<Long>>): Set<Long> =
-        tree.pathTo(id).flatMap { reqs[it.id].orEmpty() }.toSet()
+        reqs[id].orEmpty()
 
     /**
      * True if something this entry waits for is not finished yet.

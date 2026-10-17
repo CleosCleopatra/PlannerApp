@@ -1,23 +1,31 @@
 package com.todaysday.planner.data.db
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.todaysday.planner.data.db.dao.EntryDao
 import com.todaysday.planner.data.db.dao.PlaceDao
+import com.todaysday.planner.data.db.dao.SettingDao
 import com.todaysday.planner.data.db.dao.TagDao
+import com.todaysday.planner.data.db.dao.TimeRuleDao
 import com.todaysday.planner.data.db.entities.DependencyEntity
 import com.todaysday.planner.data.db.entities.EntryEntity
 import com.todaysday.planner.data.db.entities.EntryTagCrossRef
 import com.todaysday.planner.data.db.entities.PlaceEntity
+import com.todaysday.planner.data.db.entities.SettingEntity
 import com.todaysday.planner.data.db.entities.TagEntity
+import com.todaysday.planner.data.db.entities.TimeRuleEntity
 
 /**
  * The app's database. Room reads the annotations below and writes the SQL code for us.
  *
- * `version` goes up every time the tables change. Later stages add tables, and each
- * time we add a small "migration" so your saved data is kept (no wiping).
+ * `version` goes up every time the tables change, and an automatic migration tells Room how
+ * to get from the old layout to the new one without losing your data. Room compares with the
+ * saved copies of the old layouts in app/schemas, so never delete the files in that folder.
+ *
+ * Version 2 added the time_rules and settings tables.
  */
 @Database(
     entities = [
@@ -25,9 +33,14 @@ import com.todaysday.planner.data.db.entities.TagEntity
         TagEntity::class,
         EntryTagCrossRef::class,
         PlaceEntity::class,
-        DependencyEntity::class
+        DependencyEntity::class,
+        TimeRuleEntity::class,
+        SettingEntity::class
     ],
-    version = 1,
+    version = 2,
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2)
+    ],
     exportSchema = true
 )
 abstract class PlannerDatabase : RoomDatabase() {
@@ -36,6 +49,8 @@ abstract class PlannerDatabase : RoomDatabase() {
     abstract fun entryDao(): EntryDao
     abstract fun tagDao(): TagDao
     abstract fun placeDao(): PlaceDao
+    abstract fun timeRuleDao(): TimeRuleDao
+    abstract fun settingDao(): SettingDao
 
     companion object {
         /** The real database, saved in a file on the phone. */

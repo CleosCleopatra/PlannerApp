@@ -41,10 +41,19 @@ private val subtabs = listOf(
     EntryType.REPEATING to "Repeating"
 )
 
+// What the + button can create. Repeating entries are added in the next message (M6b).
+// What the + button can create.
+private val creatable = listOf(
+    EntryType.GOAL to "New goal",
+    EntryType.TASK to "New task",
+    EntryType.EVENT to "New event",
+    EntryType.REPEATING to "New repeating"
+)
+
 /**
  * The Goals tab. This function connects the ViewModel to the screen below.
  *
- * @param onCreate called when the + button asks for a new goal or task
+ * @param onCreate called when the + button asks for a new entry
  *                 (the Long is the goal to put it in, or null)
  * @param onEdit   called when an entry is tapped to be edited
  */
@@ -114,8 +123,8 @@ private fun GoalsContent(
             )
         }
 
-        // The + button. Events and repeating entries get theirs in M6.
-        val canCreate = state.selectedTab == EntryType.GOAL || state.selectedTab == EntryType.TASK
+        // The + button. Hidden on a subtab whose entries can't be created yet.
+        val canCreate = creatable.any { it.first == state.selectedTab }
         if (canCreate) {
             Box(
                 modifier = Modifier
@@ -125,29 +134,25 @@ private fun GoalsContent(
                 FloatingActionButton(
                     onClick = {
                         if (state.selectedTab == EntryType.GOAL) {
-                            menuOpen = true // on the Goals subtab you choose: goal or task
+                            menuOpen = true // on the Goals subtab you choose what to create
                         } else {
-                            onCreate(EntryType.TASK, null)
+                            onCreate(state.selectedTab, null)
                         }
                     }
                 ) {
                     Icon(Icons.Filled.Add, contentDescription = "Add")
                 }
                 DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                    DropdownMenuItem(
-                        text = { Text("New goal") },
-                        onClick = {
-                            menuOpen = false
-                            onCreate(EntryType.GOAL, state.openGoalId)
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text("New task") },
-                        onClick = {
-                            menuOpen = false
-                            onCreate(EntryType.TASK, state.openGoalId)
-                        }
-                    )
+                    creatable.forEach { (type, label) ->
+                        DropdownMenuItem(
+                            text = { Text(label) },
+                            onClick = {
+                                menuOpen = false
+                                // Inside an open goal, the new entry goes into that goal.
+                                onCreate(type, state.openGoalId)
+                            }
+                        )
+                    }
                 }
             }
         }

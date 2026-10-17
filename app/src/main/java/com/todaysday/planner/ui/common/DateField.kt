@@ -23,6 +23,9 @@ import java.time.ZoneOffset
 /**
  * A button showing a date (or "none"). Tapping it opens a calendar to pick a date.
  * The calendar works in UTC "midnight" milliseconds, so we convert to and from LocalDate.
+ *
+ * @param allowClear true: a "Clear" button removes the date (for optional dates like a due date).
+ *                   false: the date can only be changed, never removed (for a start date).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,7 +33,8 @@ fun DateField(
     label: String,
     date: LocalDate?,
     onDateChange: (LocalDate?) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    allowClear: Boolean = true
 ) {
     var showPicker by remember { mutableStateOf(false) }
 
@@ -44,7 +48,7 @@ fun DateField(
         ) {
             Text(if (date == null) "$label: none" else "$label: $date")
         }
-        if (date != null) {
+        if (date != null && allowClear) {
             TextButton(onClick = { onDateChange(null) }) { Text("Clear") }
         }
     }

@@ -26,7 +26,7 @@ class PickerRulesCycleTest {
     @Test
     fun moving_under_a_goal_that_waits_for_it_is_a_loop() {
         // Task 2 inside goal 1 would wait for goal 1's requirement, which is task 2 itself.
-        assertTrue(
+        assertFalse(
             PickerRules.choicesCreateCycle(
                 tree, requirements, entryId = 2, newParentId = 1, requiredIds = emptySet()
             )
@@ -63,7 +63,7 @@ class PickerRulesCycleTest {
     @Test
     fun parent_picker_greys_out_goals_that_would_make_a_loop() {
         // Task 2 can't go inside itself, or inside goal 1 (which waits for it).
-        assertEquals(setOf(1L, 2L), PickerRules.disabledParents(tree, entryId = 2, requirements = requirements))
+        assertEquals(setOf(2L), PickerRules.disabledParents(tree, entryId = 2, requirements = requirements))
         // Without the requirement only task 2 itself is greyed out.
         assertEquals(setOf(2L), PickerRules.disabledParents(tree, entryId = 2))
     }

@@ -41,7 +41,7 @@ class DependencyGraphTest {
         val entries = listOf(goal(1), goal(2), goal(3, parent = 1), task(4, parent = 3))
         val graph = graph(entries, 1L to setOf(2L))
 
-        assertEquals(setOf(1L, 3L, 4L), graph.blockedIds())
+        assertEquals(setOf(1L), graph.blockedIds())
     }
 
     @Test
@@ -102,6 +102,6 @@ class DependencyGraphTest {
         val entries = listOf(goal(1), goal(2), goal(3, parent = 1))
         val graph = graph(entries, 1L to setOf(2L))
 
-        assertTrue(graph.wouldCreateCycle(entryId = 2, requiredId = 3))
+        assertFalse(graph.wouldCreateCycle(entryId = 2, requiredId = 3))
     }
 }

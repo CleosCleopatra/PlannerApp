@@ -11,8 +11,8 @@ import com.todaysday.planner.domain.model.Task
 import com.todaysday.planner.domain.progress.Progress
 import com.todaysday.planner.domain.progress.ProgressCalculator
 import com.todaysday.planner.domain.progress.formatMinutes
+import com.todaysday.planner.domain.tree.DependencyGraph
 import com.todaysday.planner.domain.tree.EntryTree
-import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -39,6 +39,7 @@ private val entryOrder: Comparator<Entry> =
  *
  * @param entries       all entries (finished ones too)
  * @param loggedMinutes minutes worked per entry id (empty until the work history exists, M13)
+ * @param requirements  "requires completion of": entry id -> the ids it requires
  * @param selectedTab   which subtab is open
  * @param openGoalId    the goal we are inside (Goals subtab only), or null for the top level
  * @param zone, locale  used to write dates; tests set them so results are the same everywhere
@@ -48,11 +49,24 @@ fun buildGoalsUiState(
     loggedMinutes: Map<Long, Int>,
     selectedTab: EntryType,
     openGoalId: Long?,
+    requirements: Map<Long, Set<Long>> = emptyMap(),
     zone: ZoneId = ZoneId.systemDefault(),
     locale: Locale = Locale.getDefault()
 ): GoalsUiState {
     val tree = EntryTree(entries)
     val calculator = ProgressCalculator(tree, loggedMinutes)
+    val graph = DependencyGraph(tree, requirements)
+
+    // The names of the unfinished entries this entry has to wait for, in alphabetical order.
+    // A finished entry waits for nothing. Requirements on missing entries are ignored.
+    fun waitingFor(entry: Entry): List<String> {
+        if (entry.completedAt != null) return emptyList()
+        return graph.waitsFor(entry.id)
+            .mapNotNull { tree[it] }
+            .filter { it.completedAt == null }
+            .map { it.name }
+            .sortedBy { it.lowercase() }
+    }
 
     // Makes the card data for one entry.
     fun rowOf(entry: Entry, subtitle: String? = null): EntryRow {
@@ -64,7 +78,8 @@ fun buildGoalsUiState(
             showProgress = entry is Goal || entry is Task,
             fraction = progress.fraction,
             progressText = progressText(entry, progress),
-            childCount = tree.childrenOf(entry.id).size
+            childCount = tree.childrenOf(entry.id).size,
+            waitingFor = waitingFor(entry)
         )
     }
 

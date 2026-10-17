@@ -5,7 +5,9 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.todaysday.planner.domain.model.Entry
 import com.todaysday.planner.domain.model.EntryType
+import com.todaysday.planner.domain.model.Event
 import com.todaysday.planner.domain.model.Goal
+import com.todaysday.planner.domain.model.Repeating
 import com.todaysday.planner.domain.model.Task
 
 /**
@@ -20,27 +22,31 @@ object FormRoutes {
     // The patterns used when the NavHost is set up.
     const val GOAL_FORM = "goal_form?entryId={entryId}&parentId={parentId}"
     const val TASK_FORM = "task_form?entryId={entryId}&parentId={parentId}"
+    const val EVENT_FORM = "event_form?entryId={entryId}&parentId={parentId}"
+    const val REPEATING_FORM = "repeating_form?entryId={entryId}&parentId={parentId}"
 
     val arguments = listOf(
         navArgument(ENTRY_ID) { type = NavType.LongType; defaultValue = NONE },
         navArgument(PARENT_ID) { type = NavType.LongType; defaultValue = NONE }
     )
 
-    /** The address for creating a new goal or task. Events and repeating entries come in M6. */
+    /** The address for creating a new entry of the given kind. */
     fun create(type: EntryType, parentId: Long?): String {
         val parent = parentId ?: NONE
         return when (type) {
             EntryType.GOAL -> "goal_form?entryId=$NONE&parentId=$parent"
             EntryType.TASK -> "task_form?entryId=$NONE&parentId=$parent"
-            else -> throw IllegalArgumentException("No form for $type yet")
+            EntryType.EVENT -> "event_form?entryId=$NONE&parentId=$parent"
+            EntryType.REPEATING -> "repeating_form?entryId=$NONE&parentId=$parent"
         }
     }
 
-    /** The address for editing an entry, or null for kinds that have no form yet. */
-    fun edit(entry: Entry): String? = when (entry) {
+    /** The address for editing an entry. */
+    fun edit(entry: Entry): String = when (entry) {
         is Goal -> "goal_form?entryId=${entry.id}&parentId=$NONE"
         is Task -> "task_form?entryId=${entry.id}&parentId=$NONE"
-        else -> null
+        is Event -> "event_form?entryId=${entry.id}&parentId=$NONE"
+        is Repeating -> "repeating_form?entryId=${entry.id}&parentId=$NONE"
     }
 }
 

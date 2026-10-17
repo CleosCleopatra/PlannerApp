@@ -9,12 +9,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -93,12 +95,7 @@ fun EntryListScreen(
                             onClick = { onGoalClick(entry.id) },
                             onEdit = { onEdit(entry) }
                         )
-                        is Task -> EntryCard(
-                            row = row,
-                            onClick = { onEdit(entry) },
-                            onEdit = null
-                        )
-                        else -> EntryCard(row = row, onClick = null, onEdit = null)
+                        else -> EntryCard(row = row, onClick = { onEdit(entry) }, onEdit = null)
                     }
                 }
             }
@@ -116,8 +113,8 @@ private fun EmptyMessage(state: GoalsUiState) {
         state.openGoalId != null -> "Nothing inside this goal yet. Tap + to add something."
         state.selectedTab == EntryType.GOAL -> "No goals yet. Tap + to add one."
         state.selectedTab == EntryType.TASK -> "No tasks yet. Tap + to add one."
-        state.selectedTab == EntryType.EVENT -> "No events yet. Creating events arrives in M6."
-        else -> "No repeating entries yet. Creating them arrives in M6."
+        state.selectedTab == EntryType.EVENT -> "No events yet. Tap + to add one."
+        else -> "No repeating entries yet. Tap + to add one."
     }
     Text(
         text = text,
@@ -154,11 +151,23 @@ private fun EntryCardContent(row: EntryRow, onEdit: (() -> Unit)?) {
     Column(modifier = Modifier.padding(12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = entry.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    textDecoration = if (isDone) TextDecoration.LineThrough else TextDecoration.None
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // A small lock before the name: this entry can't be started yet.
+                    if (row.isBlocked) {
+                        Icon(
+                            imageVector = Icons.Filled.Lock,
+                            contentDescription = "Blocked",
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.tertiary
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                    }
+                    Text(
+                        text = entry.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        textDecoration = if (isDone) TextDecoration.LineThrough else TextDecoration.None
+                    )
+                }
                 if (row.detail.isNotEmpty()) {
                     Text(
                         text = row.detail,
@@ -171,6 +180,13 @@ private fun EntryCardContent(row: EntryRow, onEdit: (() -> Unit)?) {
                         text = path,
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                if (row.isBlocked) {
+                    Text(
+                        text = "Waiting for: " + row.waitingFor.joinToString(", "),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.tertiary
                     )
                 }
             }

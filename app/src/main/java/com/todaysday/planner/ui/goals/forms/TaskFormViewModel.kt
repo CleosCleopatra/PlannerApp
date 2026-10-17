@@ -39,11 +39,26 @@ class TaskFormViewModel(
         viewModelScope.launch {
             val existing = entryId?.let { repository.getEntry(it) } as? Task
             val parent = (existing?.parentId ?: initialParentId)?.let { repository.getEntry(it) }
-            val required = if (existing != null) repository.getRequiredIds(existing.id) else emptySet()
+            val required = if (existing != null) {
+                repository.getRequiredIds(existing.id)
+            } else {
+                parent?.let {repository.getRequiredIds(it.id)}.orEmpty()
+            }
             _state.value = if (existing != null) {
                 TaskFormState.forTask(existing, parent?.name, required)
             } else {
-                TaskFormState.forNew(parent?.id, parent?.name)
+                TaskFormState.forNew(parent?.id, parent?.name).copy (
+                    description = parent?.description.orEmpty(),
+                    priority = parent?.priority
+                        ?: com.todaysday.planner.domain.model.Level.NORMAL,
+                    effort = parent?.effort
+                        ?: com.todaysday.planner.domain.model.Level.NORMAL,
+                    dueDate = parent?.dueDate,
+                    placeId = parent?.placeId,
+                    tagIds = parent?.tagIds.orEmpty(),
+                    requiredIds = required,
+                    countsTowardParent = parent?.countsTowardParent ?: true
+                )
             }
         }
     }

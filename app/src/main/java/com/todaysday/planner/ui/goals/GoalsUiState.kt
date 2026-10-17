@@ -11,8 +11,13 @@ data class EntryRow(
     val showProgress: Boolean,  // draw a progress bar?
     val fraction: Float,        // 0.0 to 1.0, how much of the bar is filled
     val progressText: String,   // e.g. "3 h 20 min left"
-    val childCount: Int         // how many entries are directly inside it
-)
+    val childCount: Int,        // how many entries are directly inside it
+    val waitingFor: List<String> = emptyList() // names of unfinished entries it waits for
+) {
+    /** True while something this entry requires (itself or through a parent goal) is unfinished. */
+    val isBlocked: Boolean
+        get() = waitingFor.isNotEmpty()
+}
 
 /** A group of cards with an optional heading, e.g. "Tasks". */
 data class EntrySection(

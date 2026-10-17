@@ -137,11 +137,12 @@ fun CountsTowardParentSwitch(
 fun DoneAndDeleteSection(
     isDone: Boolean,
     onDoneChange: (Boolean) -> Unit,
-    onDeleteClick: () -> Unit
+    onDeleteClick: () -> Unit,
+    doneLabel: String = "Done"
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("Done", modifier = Modifier.weight(1f))
+            Text(doneLabel, modifier = Modifier.weight(1f))
             Switch(checked = isDone, onCheckedChange = onDoneChange)
         }
         OutlinedButton(
@@ -150,5 +151,16 @@ fun DoneAndDeleteSection(
         ) {
             Text("Delete")
         }
+    }
+}
+
+/** A Delete button on its own, for forms that have no "Done" switch (events). */
+@Composable
+fun DeleteButton(onDeleteClick: () -> Unit) {
+    OutlinedButton(
+        onClick = onDeleteClick,
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
+    ) {
+        Text("Delete")
     }
 }

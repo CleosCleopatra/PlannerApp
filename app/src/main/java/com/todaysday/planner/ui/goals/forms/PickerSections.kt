@@ -47,7 +47,8 @@ fun PickerSections(
     onPlaceChange: (Long?) -> Unit,
     onRequiredChange: (Set<Long>) -> Unit,
     onCreateTag: (String) -> Unit,
-    onCreatePlace: (String) -> Unit
+    onCreatePlace: (String) -> Unit,
+    showRequires: Boolean = true
 ) {
     var open by rememberSaveable { mutableStateOf(OpenPicker.NONE) }
 
@@ -59,11 +60,13 @@ fun PickerSections(
     PickerRow("Part of", parentName ?: "None (top level)", "Change") { open = OpenPicker.PARENT }
     PickerRow("Tags", tagNames.joinToString(", ").ifEmpty { "None" }, "Choose") { open = OpenPicker.TAGS }
     PickerRow("Place", placeName ?: "Anywhere", "Change") { open = OpenPicker.PLACE }
-    PickerRow(
-        "Requires completion of",
-        requiredNames.joinToString(", ").ifEmpty { "Nothing" },
-        "Choose"
-    ) { open = OpenPicker.REQUIRES }
+    if (showRequires) {
+        PickerRow(
+            "Requires completion of",
+            requiredNames.joinToString(", ").ifEmpty { "Nothing" },
+            "Choose"
+        ) { open = OpenPicker.REQUIRES }
+    }
 
     // ---------- The pop-ups ----------
 
